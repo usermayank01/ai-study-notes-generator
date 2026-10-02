@@ -1,0 +1,1174 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Study Notes Generator</title>
+
+    <!-- Markdown renderer -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f4f7ff;
+            color: #111827;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            margin: auto;
+            padding: 35px 20px 60px;
+        }
+
+
+        /* =========================
+           HEADER
+        ========================= */
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin: 0 0 10px;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .header p {
+            font-size: 18px;
+            color: #64748b;
+            margin: 0;
+        }
+
+        .status {
+            display: inline-block;
+            margin-top: 18px;
+            padding: 10px 18px;
+            background: #eefbf3;
+            color: #15803d;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background: #22c55e;
+            border-radius: 50%;
+            margin-right: 7px;
+        }
+
+
+        /* =========================
+           CARDS
+        ========================= */
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 32px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 30px rgba(30, 64, 175, 0.08);
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .section-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 17px;
+            background: #edf3ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            flex-shrink: 0;
+        }
+
+        .section-title h2 {
+            margin: 0;
+            font-size: 28px;
+        }
+
+        .section-title p {
+            margin: 5px 0 0;
+            color: #64748b;
+            font-size: 16px;
+        }
+
+
+        /* =========================
+           UPLOAD
+        ========================= */
+
+        .upload-area {
+            border: 2px dashed #8ab4ff;
+            border-radius: 18px;
+            background: #f8fbff;
+            padding: 45px 25px;
+            text-align: center;
+        }
+
+        .upload-cloud {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-area h3 {
+            margin: 0 0 8px;
+            font-size: 22px;
+        }
+
+        .upload-area p {
+            margin: 0 0 22px;
+            color: #64748b;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .choose-btn {
+            display: inline-block;
+            background: #2563eb;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 16px;
+            transition: 0.2s;
+        }
+
+        .choose-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .supported {
+            margin-top: 18px;
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .selected-files {
+            margin-top: 15px;
+            font-size: 15px;
+            color: #334155;
+            line-height: 1.8;
+        }
+
+        .selected-files strong {
+            color: #111827;
+        }
+
+        .upload-btn {
+            margin-top: 22px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .upload-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+        .message {
+            margin-top: 18px;
+            padding: 15px;
+            background: #f1f5f9;
+            border-radius: 12px;
+            color: #334155;
+            display: none;
+            line-height: 1.5;
+        }
+
+
+        /* =========================
+           STUDY TOOLS
+        ========================= */
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .tool-btn {
+            border: none;
+            color: white;
+            padding: 17px 12px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .tool-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.92;
+        }
+
+        .summary-btn {
+            background: #16a34a;
+        }
+
+        .revision-btn {
+            background: #7c3aed;
+        }
+
+        .quiz-btn {
+            background: #f97316;
+        }
+
+        .keypoints-btn {
+            background: #ef4444;
+        }
+
+
+        /* =========================
+           RESULT BOX
+        ========================= */
+
+        .result-box {
+            margin-top: 20px;
+            background: #f8fafc;
+            border-radius: 14px;
+            padding: 25px;
+            min-height: 60px;
+            overflow-wrap: break-word;
+        }
+
+
+        /* =========================
+           MARKDOWN STYLING
+        ========================= */
+
+        .result-box h1 {
+            font-size: 32px;
+            line-height: 1.3;
+            margin: 5px 0 20px;
+            color: #111827;
+            font-weight: 700;
+        }
+
+        .result-box h2 {
+            font-size: 26px;
+            line-height: 1.35;
+            margin: 30px 0 14px;
+            color: #172554;
+            font-weight: 700;
+        }
+
+        .result-box h3 {
+            font-size: 21px;
+            line-height: 1.4;
+            margin: 24px 0 10px;
+            color: #1e3a8a;
+            font-weight: 700;
+        }
+
+        .result-box h4 {
+            font-size: 18px;
+            margin: 20px 0 8px;
+            color: #334155;
+        }
+
+        .result-box p {
+            font-size: 16px;
+            line-height: 1.75;
+            margin: 10px 0;
+            color: #1f2937;
+        }
+
+        .result-box strong {
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .result-box em {
+            font-style: italic;
+        }
+
+        .result-box ul,
+        .result-box ol {
+            margin: 12px 0 18px 28px;
+            padding-left: 15px;
+        }
+
+        .result-box li {
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 7px;
+            color: #1f2937;
+        }
+
+        .result-box ul li::marker {
+            color: #2563eb;
+        }
+
+        .result-box blockquote {
+            border-left: 4px solid #2563eb;
+            padding: 10px 15px;
+            margin: 18px 0;
+            color: #475569;
+            background: #eff6ff;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .result-box code {
+            background: #e2e8f0;
+            padding: 3px 7px;
+            border-radius: 5px;
+            font-family: Consolas, monospace;
+            font-size: 14px;
+        }
+
+        .result-box pre {
+            background: #111827;
+            color: #f8fafc;
+            padding: 18px;
+            border-radius: 12px;
+            overflow-x: auto;
+            margin: 18px 0;
+        }
+
+        .result-box pre code {
+            background: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        .result-box hr {
+            border: none;
+            border-top: 1px solid #cbd5e1;
+            margin: 25px 0;
+        }
+
+        .result-box table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+        }
+
+        .result-box th,
+        .result-box td {
+            border: 1px solid #cbd5e1;
+            padding: 10px;
+            text-align: left;
+            line-height: 1.5;
+        }
+
+        .result-box th {
+            background: #e2e8f0;
+            font-weight: 700;
+        }
+
+
+        /* =========================
+           QUIZ
+        ========================= */
+
+        .quiz-question {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .quiz-question h2 {
+            margin-top: 0;
+        }
+
+        .question-text {
+            font-weight: 500;
+        }
+
+        .correct-answer {
+            margin-top: 15px;
+        }
+
+        .explanation {
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+
+        /* =========================
+           ASK AI
+        ========================= */
+
+        textarea {
+            width: 100%;
+            min-height: 140px;
+            resize: vertical;
+            padding: 17px;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: Arial, Helvetica, sans-serif;
+            outline: none;
+        }
+
+        textarea:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .ask-btn {
+            margin-top: 15px;
+            border: none;
+            background: #2563eb;
+            color: white;
+            padding: 14px 28px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .ask-btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+        }
+
+
+        /* =========================
+           FOOTER
+        ========================= */
+
+        .tip {
+            background: #eff6ff;
+            color: #2563eb;
+            padding: 16px 20px;
+            border-radius: 12px;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+
+        /* =========================
+           LOADING
+        ========================= */
+
+        .loading {
+            color: #64748b;
+            font-style: italic;
+        }
+
+
+        /* =========================
+           RESPONSIVE
+        ========================= */
+
+        @media (max-width: 900px) {
+
+            .tools-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .header h1 {
+                font-size: 34px;
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            .container {
+                padding: 20px 12px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .section-title h2 {
+                font-size: 23px;
+            }
+
+            .section-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 25px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <div class="header">
+
+        <h1>🎓 AI Study Notes Generator</h1>
+
+        <p>
+            Upload your study material and let AI create notes,
+            revisions, quizzes or answer your questions.
+        </p>
+
+        <div class="status">
+
+            <span class="status-dot"></span>
+
+            Powered by Llama 3.2 (Local)
+
+        </div>
+
+    </div>
+
+
+
+    <!-- =========================
+         UPLOAD SECTION
+    ========================== -->
+
+    <div class="card">
+
+        <div class="section-title">
+
+            <div class="section-icon">
+                📄
+            </div>
+
+            <div>
+
+                <h2>Upload Study Material</h2>
+
+                <p>
+                    Upload your documents and let AI read them.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="upload-area">
+
+            <div class="upload-cloud">
+                ☁️
+            </div>
+
+            <h3>
+                Choose your study documents
+            </h3>
+
+            <p>
+                Upload one or multiple files
+            </p>
+
+
+            <label
+                for="fileInput"
+                class="choose-btn"
+            >
+                📁 Choose Files
+            </label>
+
+
+            <input
+                type="file"
+                id="fileInput"
+                class="file-input"
+                multiple
+                accept=".pdf,.docx,.txt,.xlsx,.pptx,.csv,.md,.rtf"
+            >
+
+
+            <div class="supported">
+                Supported: PDF, DOCX, TXT, MD, XLSX, CSV, PPTX, RTF
+            </div>
+
+
+            <div
+                id="selectedFiles"
+                class="selected-files"
+            >
+                No files selected
+            </div>
+
+
+            <button
+                class="upload-btn"
+                onclick="uploadFiles()"
+            >
+                Upload & Process
+            </button>
+
+        </div>
+
+
+        <div
+            id="uploadMessage"
+            class="message"
+        ></div>
+
+    </div>
+
+
+
+    <!-- =========================
+         STUDY TOOLS
+    ========================== -->
+
+    <div class="card">
+
+        <div class="section-title">
+
+            <div class="section-icon">
+                🛠️
+            </div>
+
+            <div>
+
+                <h2>Study Tools</h2>
+
+                <p>
+                    Generate useful study material from your uploaded documents.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <div class="tools-grid">
+
+
+            <button
+                class="tool-btn summary-btn"
+                onclick="generateTool('summary')"
+            >
+                📄 Generate Summary
+            </button>
+
+
+            <button
+                class="tool-btn revision-btn"
+                onclick="generateTool('revision')"
+            >
+                📚 Revision Notes
+            </button>
+
+
+            <button
+                class="tool-btn quiz-btn"
+                onclick="generateTool('quiz')"
+            >
+                ❓ Generate Quiz
+            </button>
+
+
+            <button
+                class="tool-btn keypoints-btn"
+                onclick="generateTool('keypoints')"
+            >
+                📌 Key Points
+            </button>
+
+        </div>
+
+
+        <div
+            id="toolResult"
+            class="result-box"
+        ></div>
+
+    </div>
+
+
+
+    <!-- =========================
+         ASK AI
+    ========================== -->
+
+    <div class="card">
+
+        <div class="section-title">
+
+            <div class="section-icon">
+                💬
+            </div>
+
+            <div>
+
+                <h2>Ask Your Study AI</h2>
+
+                <p>
+                    Ask questions about your uploaded material.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <textarea
+            id="question"
+            placeholder="Ask something about your uploaded documents..."
+        ></textarea>
+
+
+        <button
+            class="ask-btn"
+            onclick="askAI()"
+        >
+            ➤ Ask AI
+        </button>
+
+
+        <div
+            id="answer"
+            class="result-box"
+        ></div>
+
+    </div>
+
+
+
+    <!-- =========================
+         TIP
+    ========================== -->
+
+    <div class="tip">
+
+        💡 Tip: Upload lecture notes, textbooks, slides,
+        spreadsheets or other study material.
+        The AI will use your documents to answer questions.
+
+    </div>
+
+
+</div>
+
+
+
+<script>
+
+
+    /* =========================
+       MARKDOWN CONFIGURATION
+    ========================= */
+
+    marked.setOptions({
+
+        breaks: true,
+
+        gfm: true
+
+    });
+
+
+
+    /* =========================
+       DISPLAY SELECTED FILES
+    ========================= */
+
+    document
+        .getElementById("fileInput")
+        .addEventListener("change", function () {
+
+            const files = this.files;
+
+            const selectedFiles =
+                document.getElementById("selectedFiles");
+
+
+            if (files.length === 0) {
+
+                selectedFiles.innerHTML =
+                    "No files selected";
+
+                return;
+
+            }
+
+
+            let html =
+                "<strong>Selected files:</strong><br>";
+
+
+            for (let i = 0; i < files.length; i++) {
+
+                html +=
+                    "📄 " +
+                    escapeHtml(files[i].name) +
+                    "<br>";
+
+            }
+
+
+            selectedFiles.innerHTML = html;
+
+        });
+
+
+
+    /* =========================
+       UPLOAD FILES
+    ========================== */
+
+    async function uploadFiles() {
+
+        const input =
+            document.getElementById("fileInput");
+
+        const message =
+            document.getElementById("uploadMessage");
+
+
+        if (input.files.length === 0) {
+
+            message.style.display = "block";
+
+            message.innerHTML =
+                "⚠️ Please choose at least one file.";
+
+            return;
+
+        }
+
+
+        const formData =
+            new FormData();
+
+
+        for (const file of input.files) {
+
+            formData.append("files", file);
+
+        }
+
+
+        message.style.display = "block";
+
+        message.innerHTML =
+            "⏳ Processing your documents...";
+
+
+        try {
+
+            const response =
+                await fetch("/upload", {
+
+                    method: "POST",
+
+                    body: formData
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Upload failed."
+                );
+
+            }
+
+
+            message.innerHTML =
+                "✅ " +
+                (
+                    data.message ||
+                    "Documents processed successfully!"
+                );
+
+
+        } catch (error) {
+
+            message.innerHTML =
+                "❌ Error: " +
+                escapeHtml(error.message);
+
+        }
+
+    }
+
+
+
+    /* =========================
+       GENERATE STUDY TOOL
+    ========================== */
+
+    async function generateTool(type) {
+
+        const result =
+            document.getElementById("toolResult");
+
+
+        const routes = {
+
+            summary: "/summary",
+
+            revision: "/revision",
+
+            quiz: "/quiz",
+
+            keypoints: "/key-points"
+
+        };
+
+
+        const url =
+            routes[type];
+
+
+        if (!url) {
+
+            return;
+
+        }
+
+
+        result.innerHTML =
+            '<div class="loading">⏳ Generating...</div>';
+
+
+        try {
+
+            const response =
+                await fetch(url, {
+
+                    method: "GET"
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    data.detail ||
+                    "Something went wrong."
+                );
+
+            }
+
+
+            const content =
+                data.answer || "";
+
+
+            result.innerHTML =
+                marked.parse(content);
+
+
+            result.scrollIntoView({
+
+                behavior: "smooth",
+
+                block: "start"
+
+            });
+
+
+        } catch (error) {
+
+            result.innerHTML =
+                "<p><strong>❌ Error:</strong> " +
+                escapeHtml(error.message) +
+                "</p>";
+
+        }
+
+    }
+
+
+
+    /* =========================
+       ASK AI
+    ========================== */
+
+    async function askAI() {
+
+        const question =
+            document
+                .getElementById("question")
+                .value
+                .trim();
+
+
+        const answer =
+            document.getElementById("answer");
+
+
+        if (!question) {
+
+            answer.innerHTML =
+                "<p>⚠️ Please enter a question.</p>";
+
+            return;
+
+        }
+
+
+        answer.innerHTML =
+            '<div class="loading">⏳ AI is thinking...</div>';
+
+
+        try {
+
+            const response =
+                await fetch("/ask", {
+
+                    method: "POST",
+
+                    headers: {
+
+                        "Content-Type":
+                            "application/json"
+
+                    },
+
+                    body: JSON.stringify({
+
+                        question: question
+
+                    })
+
+                });
+
+
+            const data =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+
+                    data.detail ||
+                    "Could not get an answer."
+
+                );
+
+            }
+
+
+            const content =
+
+                data.answer ||
+
+                data.result ||
+
+                data.content ||
+
+                "";
+
+
+            if (!content) {
+
+                throw new Error(
+                    "No answer returned by AI."
+                );
+
+            }
+
+
+            /*
+             * Render Ollama Markdown
+             * as properly formatted HTML.
+             */
+
+            answer.innerHTML =
+                marked.parse(content);
+
+
+        } catch (error) {
+
+            answer.innerHTML =
+                "<p><strong>❌ Error:</strong> " +
+                escapeHtml(error.message) +
+                "</p>";
+
+        }
+
+    }
+
+
+
+    /* =========================
+       HTML ESCAPING
+    ========================== */
+
+    function escapeHtml(text) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent =
+            text;
+
+        return div.innerHTML;
+
+    }
+
+
+</script>
+
+
+</body>
+
+</html>
